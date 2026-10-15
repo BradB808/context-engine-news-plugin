@@ -1,6 +1,6 @@
 // Explicit opt-in only. These reads cannot create context or write to the site.
 import assert from 'node:assert/strict';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -27,6 +27,7 @@ try {
   const detail=await call('get_threadline',{slug:list.threadlines[0].slug});
   assert.ok(detail.articles.length);
   if(detail.next_offset!==null) await call('get_threadline',{slug:list.threadlines[0].slug,offset:detail.next_offset});
+  await mkdir(new URL('../review/',import.meta.url),{recursive:true});
   await writeFile(new URL('../review/live-results.json',import.meta.url),JSON.stringify({checked_at:new Date().toISOString(),records},null,2));
   for(const record of records) console.log(`${record.tool}: OK (${record.result.articles?.length ?? record.result.threadlines?.length ?? 1} results), edition ${record.result.published_feed_at}`);
 } finally { await client.close(); }
