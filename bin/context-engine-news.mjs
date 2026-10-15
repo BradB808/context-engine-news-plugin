@@ -21519,8 +21519,11 @@ function clean(value, max = 1200) {
 }
 function publisherExcerpt(value, title) {
   let summary = clean(value);
-  summary = summary.replace(/^\{beacon\}\s*([^{}]{1,80}?)\s+\1\s+The Big Story\s+/i, "").replace(/^\{beacon\}\s*/i, "");
   const comparable = (text) => text.normalize("NFKC").toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]/gu, "");
+  const newsletterPrefix = /^\{beacon\}\s*([^{}]{1,80}?)\s+\1\s+The Big Story\s+/i;
+  const newsletter = newsletterPrefix.test(summary);
+  summary = summary.replace(newsletterPrefix, "").replace(/^\{beacon\}\s*/i, "");
+  if (newsletter && comparable(summary.slice(0, title.length)) === comparable(title) && /^\s+\S/.test(summary.slice(title.length))) summary = summary.slice(title.length).trim();
   const footer = summary.match(/(?:^|\s)The post (.+?) appeared first on .+?\.?$/i);
   if (footer && comparable(footer[1]) === comparable(title)) summary = summary.slice(0, footer.index).trim();
   return comparable(summary) === comparable(title) ? "" : summary;

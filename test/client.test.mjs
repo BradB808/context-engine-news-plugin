@@ -78,13 +78,17 @@ test('publisher excerpts remove tracking and headline-only boilerplate without i
     {...row, trail_text:'Rates and trade.'},
     {...row, trail_text:'A substantive excerpt. The post Rates and trade appeared first on Example News.'},
     {...row, trail_text:'The article explains how a {beacon} token works.'},
+    {...row, trail_text:'Rates and trade A short publisher excerpt.'},
+    {...row, title:"Rates and trade's effect", trail_text:'{beacon} Economy Economy The Big Story Rates and trade’s effect A substantive excerpt with © Photo Credit: Example.'},
   ];
   const result = await make(async()=>Response.json({data:input,fetchedAt:NOW})).latestNews();
-  assert.equal(result.articles[0].summary,'Rates and trade A short publisher excerpt.');
+  assert.equal(result.articles[0].summary,'A short publisher excerpt.');
   assert.equal(result.articles[1].summary,'');assert.equal(result.articles[1].summary_available,false);
   assert.equal(result.articles[2].summary,'');assert.equal(result.articles[2].summary_available,false);
   assert.equal(result.articles[3].summary,'A substantive excerpt.');
   assert.equal(result.articles[4].summary,'The article explains how a {beacon} token works.');
+  assert.equal(result.articles[5].summary,'Rates and trade A short publisher excerpt.');
+  assert.equal(result.articles[6].summary,'A substantive excerpt with © Photo Credit: Example.');
   assert.equal(result.articles[0].title,row.title);assert.equal(result.articles[0].source_url,row.web_url);
 });
 
