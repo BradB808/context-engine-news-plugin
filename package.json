@@ -1,0 +1,28 @@
+{
+  "name": "context-engine-news-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only published news search and Threadlines for MCP clients.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/stdio.mjs",
+    "serve": "node src/http.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:live": "node test/live-smoke.mjs",
+    "check": "node --check src/client.mjs && node --check src/server.mjs && node --check src/http.mjs && node --check src/stdio.mjs",
+    "build": "node build.mjs",
+    "validate": "node test/validate-package.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "esbuild": "0.28.2"
+  }
+}

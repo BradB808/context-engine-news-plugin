@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "context-engine-news": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./bin/context-engine-news.mjs"],
+      "cwd": "./"
+    }
+  }
+}

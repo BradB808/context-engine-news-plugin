@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "context-engine-news",
+  "version": "0.1.0",
+  "description": "Search published news and explore Threadlines across publishers. Read-only metadata, excerpts and links. No AI generation.",
+  "author": { "name": "Context Engine News", "url": "https://thecontextengine.ca" },
+  "homepage": "https://thecontextengine.ca",
+  "repository": "https://github.com/BradB808/context-engine-news-plugin",
+  "keywords": ["news", "search", "threadlines", "publishers", "research"]
+}
