@@ -11,6 +11,8 @@ Use the Context Engine News MCP tools for this workflow:
 
 Present dates and publishers with each result. Cite both the Context Engine article link and the original publisher when discussing a report. Preserve uncertainty and attribute claims to their sources. Short excerpts cannot support details that they do not contain.
 
+When `summary_available` is false, present the headline and links without inventing a summary. `coverage_limited` (also exposed as legacy `limited`) describes the bounded upstream collection. `more_matching_threadlines` separately says that more matching topics exist than the requested result count returned.
+
 Threadlines are broad topic groups. Do not describe all members as corroboration of one event. Publisher counts do not establish independent confirmation or political balance. Do not invent chronology, sentiment, facts, or historical explanations to fill gaps.
 
 The collection is bounded and recent, not a complete archive. Use `published_feed_at`, each article's `published_at`, `stale`, and `limited` to explain freshness or coverage limits when relevant. A missing result is not evidence that an event did not happen.

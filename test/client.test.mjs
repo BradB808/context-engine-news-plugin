@@ -71,6 +71,31 @@ test('Threadline filtering and pagination preserve real member metadata', async 
   assert.equal((await client.getThreadline({slug:topic.slug,offset:first.next_offset})).next_offset,null);
 });
 
+test('publisher excerpts remove tracking and headline-only boilerplate without inventing content', async () => {
+  const input = [
+    {...row, trail_text:'{beacon} Energy & Environment Energy & Environment The Big Story Rates and trade A short publisher excerpt.'},
+    {...row, trail_text:'The post Rates and trade appeared first on Example News.'},
+    {...row, trail_text:'Rates and trade.'},
+    {...row, trail_text:'A substantive excerpt. The post Rates and trade appeared first on Example News.'},
+    {...row, trail_text:'The article explains how a {beacon} token works.'},
+  ];
+  const result = await make(async()=>Response.json({data:input,fetchedAt:NOW})).latestNews();
+  assert.equal(result.articles[0].summary,'Rates and trade A short publisher excerpt.');
+  assert.equal(result.articles[1].summary,'');assert.equal(result.articles[1].summary_available,false);
+  assert.equal(result.articles[2].summary,'');assert.equal(result.articles[2].summary_available,false);
+  assert.equal(result.articles[3].summary,'A substantive excerpt.');
+  assert.equal(result.articles[4].summary,'The article explains how a {beacon} token works.');
+  assert.equal(result.articles[0].title,row.title);assert.equal(result.articles[0].source_url,row.web_url);
+});
+
+test('coverage bounds and requested topic-result bounds are reported separately', async () => {
+  const topics=[topic,{...topic,slug:'interest-rates',label:'Interest rates'}];
+  const result=await make(async()=>Response.json({topics,featured:[],limited:false,fetchedAt:NOW})).listThreadlines({limit:1});
+  assert.equal(result.limited,false);assert.equal(result.coverage_limited,false);
+  assert.equal(result.returned_threadlines,1);assert.equal(result.matching_threadlines,2);
+  assert.equal(result.more_matching_threadlines,true);
+});
+
 test('cache shares requests, expires, and does not return mutable shared objects', async () => {
   let now = NOW; const calls = [], client = make(fixtureFetch(calls),{now:()=>now});
   const results = await Promise.all(Array.from({length:8},()=>client.searchNews({query:'canada'})));

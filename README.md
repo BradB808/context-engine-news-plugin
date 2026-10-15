@@ -14,6 +14,8 @@ A review-stage Grok Bot / MCP plugin for news search and Threadlines. It returns
 
 Example requests: “Find recent reporting about Canadian trade”, “Show the US midterms Threadline”, “Compare publishers in the Ukraine Threadline”. Searches use all supplied words, not semantic matching. Results cover a bounded recent reporting window and do not replace a complete archive or full publisher articles.
 
+Excerpt cleanup removes known RSS tracking and repeated-headline footers. If no substantive excerpt remains, `summary_available:false` makes that explicit; the connector never invents a replacement. `coverage_limited` (legacy alias `limited`) describes the upstream collection. `returned_threadlines`, `matching_threadlines` and `more_matching_threadlines` describe the requested topic-result limit separately.
+
 ## Runtime and installation
 
 Node.js 22 or newer is required. The checked-in `bin/context-engine-news.mjs` bundles the runtime dependencies, so users do not need an npm install. No API key, account, database access, or filesystem permission is required by the tools.
@@ -33,7 +35,7 @@ The root `plugin.json`, `mcp.json`, and `skills/news-and-threadlines/SKILL.md` f
 
 Replace that path with the installed package path. Cursor's native plugin-root variable is `${CURSOR_PLUGIN_ROOT}`; its documented compatibility notes say `${PLUGIN_ROOT}` is not expanded. This package avoids either variable by using a plugin-relative argument and working directory. Verify the target client's plugin loader before marketplace release.
 
-Grok Bot runs its computer in the cloud. A server bound to your Mac's localhost cannot be reached from that cloud computer. The installed Grok Bot build exposes marketplace plugins and private skills, but no custom-MCP import control was found during review. Marketplace installation and a native Grok Bot tool invocation remain release checks; do not claim those checks have passed merely because the MCP SDK tests pass.
+Grok Bot runs its computer in the cloud. A server bound to your Mac's localhost cannot be reached from that cloud computer. On October 15, 2026 the connector was registered privately through the supplied test bot as `context-engine-news` (`user-context-engine-news`), running the bundled stdio server on Node.js 22.23.3. All five native tools, topic pagination and both rejection checks passed. Reader scenarios verified attributed cross-publisher discovery, trade-search relevance and an honest empty result. This private registration is separate from marketplace package installation, which remains a release check. Do not claim a native test passed merely because SDK tests pass.
 
 ## No-generation boundary
 

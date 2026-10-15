@@ -19,6 +19,17 @@ function clean(value, max = 1200) {
     entity => ({'&amp;':'&', '&lt;':'<', '&gt;':'>', '&quot;':'"', '&apos;':"'", '&#39;':"'", '&nbsp;':' '})[entity])
     .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
+function publisherExcerpt(value, title) {
+  let summary = clean(value);
+  // Known RSS newsletter prefix: tracking marker, duplicated section, label.
+  summary = summary.replace(/^\{beacon\}\s*([^{}]{1,80}?)\s+\1\s+The Big Story\s+/i, '')
+    .replace(/^\{beacon\}\s*/i, '');
+  const comparable = text => text.normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]/gu, '');
+  const footer = summary.match(/(?:^|\s)The post (.+?) appeared first on .+?\.?$/i);
+  if (footer && comparable(footer[1]) === comparable(title)) summary = summary.slice(0, footer.index).trim();
+  // An empty excerpt is more honest than manufacturing a replacement summary.
+  return comparable(summary) === comparable(title) ? '' : summary;
+}
 function safeLink(value) {
   if (typeof value !== 'string' || value.length > 4096 || /\s/.test(value)) return null;
   try {
@@ -47,9 +58,10 @@ function article(row, topic = false) {
   const publisher = clean(topic ? row.sourceName : (row.source_name || (row.source === 'guardian' ? 'The Guardian' : '')), 120);
   const sourceUrl = safeLink(topic ? row.sourceUrl : row.web_url);
   requireValue(validId(id) && title && sourceUrl);
+  const summary = publisherExcerpt(topic ? row.summary : row.trail_text, title);
   // Explicit projection prevents bodies, AI context or account fields escaping.
   return {
-    article_id: id, title, summary: clean(topic ? row.summary : row.trail_text),
+    article_id: id, title, summary, summary_available: !!summary,
     publisher: publisher || new URL(sourceUrl).hostname,
     published_at: iso(topic ? row.publishedAt : row.web_publication_date),
     section: clean(row.section, 100), url: articleUrl(id), source_url: sourceUrl,
@@ -108,7 +120,7 @@ export function createNewsClient({ fetchImpl = globalThis.fetch, now = Date.now,
       try {
         const response = await fetchImpl(url.href, {
           method: 'GET', redirect: 'error', credentials: 'omit', signal: controller.signal,
-          headers: { Accept: 'application/json', 'User-Agent': 'ContextEngineNewsConnector/0.1.0' },
+          headers: { Accept: 'application/json', 'User-Agent': 'ContextEngineNewsConnector/0.1.1' },
         });
         requireValue(!response.redirected && (!response.url || response.url === key), 'Blocked redirected feed');
         if (response.status === 404) throw new NewsError('Not present in the current published collection.');
@@ -182,7 +194,11 @@ export function createNewsClient({ fetchImpl = globalThis.fetch, now = Date.now,
       const featured = new Set(Array.isArray(raw.featured) ? raw.featured : []);
       const topics = raw.topics.map(row => ({ ...topicCard(row), featured: featured.has(row.slug) }))
         .filter(row => !filter || `${row.title} ${row.description}`.toLocaleLowerCase('en').includes(filter));
-      return envelope(freshness(raw.fetchedAt, now(), raw.stale), { threadlines: topics.slice(0, limit) }, { limited: raw.limited, matching_threadlines: topics.length });
+      return envelope(freshness(raw.fetchedAt, now(), raw.stale), { threadlines: topics.slice(0, limit) }, {
+        limited: raw.limited, coverage_limited: raw.limited,
+        returned_threadlines: Math.min(topics.length, limit), matching_threadlines: topics.length,
+        more_matching_threadlines: topics.length > limit,
+      });
     },
     async getThreadline({ slug, offset = 0 }) {
       requireValue(typeof slug === 'string' && slug.length <= 90 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug), 'Use a slug returned by list_threadlines.');
